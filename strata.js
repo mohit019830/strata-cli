@@ -12,9 +12,16 @@ function getCommitHistory(repoPath) {
      * Each commit will have: hash, author, timestamp, message, and files changed.
      */
 
-    // Step 1: just returning an empty array for now
-    // we'll build this out step by step
     let commits = [];
+
+    // Step 2: check if the given path is actually a git repo
+    // running "git status" is the simplest way - if it fails, it's not a repo
+    const statusOutput = execSync("git status", {
+        cwd: repoPath,
+        encoding: "utf-8"
+    });
+
+    console.log(`Valid git repo found at: ${repoPath}`);
 
     return commits;
 }
