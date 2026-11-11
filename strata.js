@@ -14,14 +14,30 @@ function getCommitHistory(repoPath) {
 
     let commits = [];
 
-    // Step 2: check if the given path is actually a git repo
-    // running "git status" is the simplest way - if it fails, it's not a repo
-    const statusOutput = execSync("git status", {
-        cwd: repoPath,
-        encoding: "utf-8"
-    });
+    // Step 3: handle bad paths and non-git folders with proper checks
+    // first make sure the path even exists before running any git command
+    if (!fs.existsSync(repoPath)) {
+        console.log(`Error: the path '${repoPath}' does not exist.`);
+        return commits;
+    }
 
-    console.log(`Valid git repo found at: ${repoPath}`);
+    try {
+        // Step 2: check if the given path is actually a git repo
+        // running "git status" is the simplest way - if it fails, it's not a repo
+        const statusOutput = execSync("git status", {
+            cwd: repoPath,
+            encoding: "utf-8",
+            stdio: ["pipe", "pipe", "pipe"]  // suppress error output from git
+        });
+
+        console.log(`Valid git repo found at: ${repoPath}`);
+
+    } catch (error) {
+        // execSync throws if the command fails (non-zero exit code)
+        // that means it's not a git repo, or git isn't installed
+        console.log(`Error: '${repoPath}' is not a valid git repository.`);
+        return commits;
+    }
 
     return commits;
 }
@@ -31,3 +47,5 @@ function getCommitHistory(repoPath) {
 const testPath = ".";
 const result = getCommitHistory(testPath);
 console.log(result);
+
+module.exports = { getCommitHistory };
