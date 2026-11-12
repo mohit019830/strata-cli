@@ -82,9 +82,18 @@ function analyzeRepository(commits) {
 
   sortedChurn.sort((a, b) => b.frequency - a.frequency);
 
+  const sortedCoupling = Object.values(coupling)
+    .filter(pair => pair.count >= 2)
+    .sort((a, b) => {
+      if (b.count !== a.count) {
+        return b.count - a.count;
+      }
+      return b.percentage_file1 - a.percentage_file1;
+    });
+
   return {
     churn: sortedChurn,
-    coupling
+    coupling: sortedCoupling
   };
 }
 
