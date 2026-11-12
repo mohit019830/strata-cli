@@ -2,6 +2,8 @@
 const fs = require("fs");
 const path = require("path");
 
+const MAX_FILES_FOR_COUPLING = 30;
+
 function generateFilePairs(files) {
   if (!files || files.length < 2) {
     return [];
@@ -30,20 +32,6 @@ function analyzeRepository(commits) {
       continue;
     }
 
-    const pairs = generateFilePairs(commit.files);
-    for (const pair of pairs) {
-      const key = `${pair[0]}::${pair[1]}`;
-      if (!coupling[key]) {
-        coupling[key] = {
-          file1: pair[0],
-          file2: pair[1],
-          count: 1
-        };
-      } else {
-        coupling[key].count += 1;
-      }
-    }
-
     for (const file of commit.files) {
       if (!churn[file.name]) {
         churn[file.name] = {
@@ -55,6 +43,24 @@ function analyzeRepository(commits) {
         churn[file.name].frequency += 1;
         churn[file.name].insertions += file.insertions;
         churn[file.name].deletions += file.deletions;
+      }
+    }
+
+    if (commit.files.length > MAX_FILES_FOR_COUPLING) {
+      continue;
+    }
+
+    const pairs = generateFilePairs(commit.files);
+    for (const pair of pairs) {
+      const key = `${pair[0]}::${pair[1]}`;
+      if (!coupling[key]) {
+        coupling[key] = {
+          file1: pair[0],
+          file2: pair[1],
+          count: 1
+        };
+      } else {
+        coupling[key].count += 1;
       }
     }
   }
