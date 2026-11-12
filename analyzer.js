@@ -2,6 +2,25 @@
 const fs = require("fs");
 const path = require("path");
 
+function generateFilePairs(files) {
+  if (!files || files.length < 2) {
+    return [];
+  }
+
+  const pairs = [];
+
+  for (let i = 0; i < files.length; i++) {
+    for (let j = i + 1; j < files.length; j++) {
+      const fileA = files[i].name;
+      const fileB = files[j].name;
+      const pair = fileA < fileB ? [fileA, fileB] : [fileB, fileA];
+      pairs.push(pair);
+    }
+  }
+
+  return pairs;
+}
+
 function analyzeRepository(commits) {
   const churn = {};
 
@@ -9,6 +28,8 @@ function analyzeRepository(commits) {
     if (!commit.files || commit.files.length === 0) {
       continue;
     }
+
+    const pairs = generateFilePairs(commit.files);
 
     for (const file of commit.files) {
       if (!churn[file.name]) {
@@ -46,4 +67,4 @@ const commits = JSON.parse(rawData);
 const results = analyzeRepository(commits);
 console.log("Analysis Results:", results);
 
-module.exports = { analyzeRepository };
+module.exports = { analyzeRepository, generateFilePairs };
