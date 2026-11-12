@@ -8,9 +8,15 @@ function analyzeRepository(commits) {
   for (const commit of commits) {
     for (const file of commit.files) {
       if (!churn[file.name]) {
-        churn[file.name] = 1;
+        churn[file.name] = {
+          frequency: 1,
+          insertions: file.insertions,
+          deletions: file.deletions
+        };
       } else {
-        churn[file.name]++;
+        churn[file.name].frequency += 1;
+        churn[file.name].insertions += file.insertions;
+        churn[file.name].deletions += file.deletions;
       }
     }
   }
