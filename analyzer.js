@@ -65,6 +65,14 @@ function analyzeRepository(commits) {
     }
   }
 
+  for (const pair of Object.values(coupling)) {
+    const freq1 = churn[pair.file1].frequency;
+    const freq2 = churn[pair.file2].frequency;
+
+    pair.percentage_file1 = Math.round((pair.count / freq1) * 100);
+    pair.percentage_file2 = Math.round((pair.count / freq2) * 100);
+  }
+
   const sortedChurn = Object.entries(churn).map(([name, stats]) => ({
     name,
     frequency: stats.frequency,
