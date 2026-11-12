@@ -32,13 +32,19 @@ function getCommitHistory(repoPath) {
 
         console.log(`Valid git repo found at: ${repoPath}`);
 
-        // Step 4: run git log and capture the raw output as a string
-        const rawLog = execSync("git log", {
-            cwd: repoPath,
-            encoding: "utf-8"
-        });
+        // Step 5: use a custom --pretty=format with a delimiter
+        // %h = short hash, %an = author name, %aI = ISO timestamp, %s = commit message
+        // using "|||" as a separator so we can split easily later
+        // (commas or pipes alone could appear in commit messages, so ||| is safer)
+        const rawLog = execSync(
+            'git log --pretty=format:"%h|||%an|||%aI|||%s"',
+            {
+                cwd: repoPath,
+                encoding: "utf-8"
+            }
+        );
 
-        console.log("--- Raw git log output ---");
+        console.log("--- Formatted git log output ---");
         console.log(rawLog);
 
     } catch (error) {
