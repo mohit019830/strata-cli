@@ -23,6 +23,7 @@ function generateFilePairs(files) {
 
 function analyzeRepository(commits) {
   const churn = {};
+  const coupling = {};
 
   for (const commit of commits) {
     if (!commit.files || commit.files.length === 0) {
@@ -30,6 +31,18 @@ function analyzeRepository(commits) {
     }
 
     const pairs = generateFilePairs(commit.files);
+    for (const pair of pairs) {
+      const key = `${pair[0]}::${pair[1]}`;
+      if (!coupling[key]) {
+        coupling[key] = {
+          file1: pair[0],
+          file2: pair[1],
+          count: 1
+        };
+      } else {
+        coupling[key].count += 1;
+      }
+    }
 
     for (const file of commit.files) {
       if (!churn[file.name]) {
@@ -56,7 +69,8 @@ function analyzeRepository(commits) {
   sortedChurn.sort((a, b) => b.frequency - a.frequency);
 
   return {
-    churn: sortedChurn
+    churn: sortedChurn,
+    coupling
   };
 }
 
