@@ -25,8 +25,17 @@ function analyzeRepository(commits) {
     }
   }
 
+  const sortedChurn = Object.entries(churn).map(([name, stats]) => ({
+    name,
+    frequency: stats.frequency,
+    insertions: stats.insertions,
+    deletions: stats.deletions
+  }));
+
+  sortedChurn.sort((a, b) => b.frequency - a.frequency);
+
   return {
-    churn
+    churn: sortedChurn
   };
 }
 
