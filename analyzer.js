@@ -2,23 +2,28 @@
 const fs = require("fs");
 const path = require("path");
 
-/**
- * Analyzes repository commit history and calculates codebase health metrics.
- * @param {Array} commits - Array of parsed commit objects.
- * @returns {Object} Calculated metrics and repository insights.
- */
 function analyzeRepository(commits) {
-  // Placeholder: returning an empty results object for now
-  const results = {};
-  return results;
+  const churn = {};
+
+  for (const commit of commits) {
+    for (const file of commit.files) {
+      if (!churn[file.name]) {
+        churn[file.name] = 1;
+      } else {
+        churn[file.name]++;
+      }
+    }
+  }
+
+  return {
+    churn
+  };
 }
 
-// Read and parse mock commit data
 const dataPath = path.join(__dirname, "mockData.json");
 const rawData = fs.readFileSync(dataPath, "utf-8");
 const commits = JSON.parse(rawData);
 
-// Execute initial analysis and output results
 const results = analyzeRepository(commits);
 console.log("Analysis Results:", results);
 
