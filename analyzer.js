@@ -6,6 +6,10 @@ function analyzeRepository(commits) {
   const churn = {};
 
   for (const commit of commits) {
+    if (!commit.files || commit.files.length === 0) {
+      continue;
+    }
+
     for (const file of commit.files) {
       if (!churn[file.name]) {
         churn[file.name] = {
