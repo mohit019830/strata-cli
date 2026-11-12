@@ -32,6 +32,15 @@ function getCommitHistory(repoPath) {
 
         console.log(`Valid git repo found at: ${repoPath}`);
 
+        // Step 4: run git log and capture the raw output as a string
+        const rawLog = execSync("git log", {
+            cwd: repoPath,
+            encoding: "utf-8"
+        });
+
+        console.log("--- Raw git log output ---");
+        console.log(rawLog);
+
     } catch (error) {
         // execSync throws if the command fails (non-zero exit code)
         // that means it's not a git repo, or git isn't installed
