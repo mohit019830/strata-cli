@@ -31,6 +31,23 @@ This module is responsible for the core analytics computations:
 - **[`mockData.json`](./mockData.json)**: Sample commit datasets matching the parsed Git schema for offline testing and verification.
 - **[`analyzer.js`](./analyzer.js)**: The core analytics script and entry point for metric calculations (`analyzeRepository`).
 
+### Implemented Metrics
+
+#### Code Churn (Hotspots)
+Tracks file modification frequency, cumulative insertions, and cumulative deletions across commit history to detect frequently rewritten components:
+- **Safeguard Handling**: Automatically ignores empty commits or commits missing a file list.
+- **Hotspot Ranking**: Results are sorted in descending order by modification frequency.
+
+**Output Schema:**
+```json
+{
+  "name": "src/auth/login.js",
+  "frequency": 2,
+  "insertions": 55,
+  "deletions": 14
+}
+```
+
 ### Running the Analyzer
 
 Run the analytics engine with Node.js:
