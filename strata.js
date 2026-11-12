@@ -32,19 +32,18 @@ function getCommitHistory(repoPath) {
 
         console.log(`Valid git repo found at: ${repoPath}`);
 
-        // Step 5: use a custom --pretty=format with a delimiter
-        // %h = short hash, %an = author name, %aI = ISO timestamp, %s = commit message
-        // using "|||" as a separator so we can split easily later
-        // (commas or pipes alone could appear in commit messages, so ||| is safer)
+        // Step 5 + 6: custom pretty format AND --numstat for file changes
+        // --numstat adds lines like "45  12  src/auth/login.py" after each commit
+        // (insertions  deletions  filename, separated by tabs)
         const rawLog = execSync(
-            'git log --pretty=format:"%h|||%an|||%aI|||%s"',
+            'git log --pretty=format:"COMMIT_START%h|||%an|||%aI|||%s" --numstat',
             {
                 cwd: repoPath,
                 encoding: "utf-8"
             }
         );
 
-        console.log("--- Formatted git log output ---");
+        console.log("--- Raw output with numstat ---");
         console.log(rawLog);
 
     } catch (error) {
