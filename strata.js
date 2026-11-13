@@ -24,13 +24,11 @@ function getCommitHistory(repoPath) {
     try {
         // Step 2: check if the given path is actually a git repo
         // running "git status" is the simplest way - if it fails, it's not a repo
-        const statusOutput = execSync("git status", {
+        execSync("git status", {
             cwd: repoPath,
             encoding: "utf-8",
             stdio: ["pipe", "pipe", "pipe"]  // suppress error output from git
         });
-
-        console.log(`Valid git repo found at: ${repoPath}`);
 
         // Step 5 + 6: custom pretty format AND --numstat for file changes
         // --numstat adds lines like "45  12  src/auth/login.py" after each commit
@@ -54,9 +52,14 @@ function getCommitHistory(repoPath) {
         for (const block of commitBlocks) {
             const lines = block.split("\n");
             const metadataLine = lines[0];
+            if (!metadataLine) continue;
 
-            // unpack our ||| separated metadata
-            const [hash, author, timestamp, message] = metadataLine.split("|||");
+            // Step 10: handle edge cases in metadata (like commit messages containing |||)
+            const metaParts = metadataLine.split("|||");
+            const hash = metaParts[0] || "";
+            const author = metaParts[1] || "";
+            const timestamp = metaParts[2] || "";
+            const message = metaParts.slice(3).join("|||") || "";
 
             const commitObj = {
                 hash,
@@ -66,22 +69,29 @@ function getCommitHistory(repoPath) {
                 files: []
             };
 
-            // Step 9: parse the numstat lines for modified files
+            // Step 9 + 10: parse numstat lines & handle binary files/blank lines
             const fileLines = lines.slice(1);
             for (const line of fileLines) {
                 const trimmedLine = line.trim();
                 if (!trimmedLine) continue;
 
                 // numstat columns are separated by tabs: insertions, deletions, filename
-                const [insertionsStr, deletionsStr, fileName] = trimmedLine.split("\t");
+                const parts = trimmedLine.split("\t");
+                if (parts.length < 3) continue;
 
-                if (fileName) {
-                    commitObj.files.push({
-                        name: fileName,
-                        insertions: parseInt(insertionsStr, 10),
-                        deletions: parseInt(deletionsStr, 10)
-                    });
-                }
+                const [insertionsStr, deletionsStr, ...fileNameParts] = parts;
+                const fileName = fileNameParts.join("\t").trim();
+
+                // Binary files show "-" for insertions/deletions in git numstat.
+                // parseInt("-", 10) is NaN, so we default it to 0.
+                const insertions = parseInt(insertionsStr, 10) || 0;
+                const deletions = parseInt(deletionsStr, 10) || 0;
+
+                commitObj.files.push({
+                    name: fileName,
+                    insertions,
+                    deletions
+                });
             }
 
             commits.push(commitObj);
