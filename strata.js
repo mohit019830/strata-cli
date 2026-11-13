@@ -43,8 +43,16 @@ function getCommitHistory(repoPath) {
             }
         );
 
-        console.log("--- Raw output with numstat ---");
-        console.log(rawLog);
+        // Step 7: split the raw output into individual commit blocks
+        // We split by "COMMIT_START", trim whitespace, and filter out any empty chunks
+        const commitBlocks = rawLog
+            .split("COMMIT_START")
+            .map(block => block.trim())
+            .filter(block => block.length > 0);
+
+        console.log(`Found ${commitBlocks.length} commit blocks.`);
+        console.log("--- First block preview ---");
+        console.log(commitBlocks[0]);
 
     } catch (error) {
         // execSync throws if the command fails (non-zero exit code)
