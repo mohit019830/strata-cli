@@ -50,9 +50,24 @@ function getCommitHistory(repoPath) {
             .map(block => block.trim())
             .filter(block => block.length > 0);
 
-        console.log(`Found ${commitBlocks.length} commit blocks.`);
-        console.log("--- First block preview ---");
-        console.log(commitBlocks[0]);
+        // Step 8: parse the metadata from each commit block
+        for (const block of commitBlocks) {
+            const lines = block.split("\n");
+            const metadataLine = lines[0];
+
+            // unpack our ||| separated metadata
+            const [hash, author, timestamp, message] = metadataLine.split("|||");
+
+            const commitObj = {
+                hash,
+                author,
+                timestamp,
+                message,
+                files: []
+            };
+
+            commits.push(commitObj);
+        }
 
     } catch (error) {
         // execSync throws if the command fails (non-zero exit code)
