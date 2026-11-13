@@ -26,11 +26,14 @@ function generateFilePairs(files) {
 function analyzeRepository(commits) {
   const churn = {};
   const coupling = {};
+  const ownership = {};
 
   for (const commit of commits) {
     if (!commit.files || commit.files.length === 0) {
       continue;
     }
+
+    const author = commit.author;
 
     for (const file of commit.files) {
       if (!churn[file.name]) {
@@ -44,6 +47,14 @@ function analyzeRepository(commits) {
         churn[file.name].insertions += file.insertions;
         churn[file.name].deletions += file.deletions;
       }
+
+      if (!ownership[file.name]) {
+        ownership[file.name] = {};
+      }
+      if (!ownership[file.name][author]) {
+        ownership[file.name][author] = 0;
+      }
+      ownership[file.name][author] += 1;
     }
 
     if (commit.files.length > MAX_FILES_FOR_COUPLING) {
@@ -93,7 +104,8 @@ function analyzeRepository(commits) {
 
   return {
     churn: sortedChurn,
-    coupling: sortedCoupling
+    coupling: sortedCoupling,
+    ownership
   };
 }
 
