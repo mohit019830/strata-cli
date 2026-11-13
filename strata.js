@@ -66,6 +66,24 @@ function getCommitHistory(repoPath) {
                 files: []
             };
 
+            // Step 9: parse the numstat lines for modified files
+            const fileLines = lines.slice(1);
+            for (const line of fileLines) {
+                const trimmedLine = line.trim();
+                if (!trimmedLine) continue;
+
+                // numstat columns are separated by tabs: insertions, deletions, filename
+                const [insertionsStr, deletionsStr, fileName] = trimmedLine.split("\t");
+
+                if (fileName) {
+                    commitObj.files.push({
+                        name: fileName,
+                        insertions: parseInt(insertionsStr, 10),
+                        deletions: parseInt(deletionsStr, 10)
+                    });
+                }
+            }
+
             commits.push(commitObj);
         }
 
