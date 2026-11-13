@@ -48,6 +48,24 @@ Tracks file modification frequency, cumulative insertions, and cumulative deleti
 }
 ```
 
+#### Temporal Coupling
+Detects hidden architectural dependencies by identifying pairs of files that are frequently modified together within the same commit:
+- **Safeguard Handling**: Automatically ignores commits with more than 30 files to prevent noise from linters, code formatters, and bulk dependency updates.
+- **Noise Filtering**: Filters out pairs that only co-occurred once (`count < 2`) to ensure reported relationships represent consistent patterns.
+- **Directional Coupling**: Computes percentages (`percentage_file1`, `percentage_file2`) showing how often modifying File A also required modifying File B, and vice versa.
+- **Ranking**: Sorted primarily by co-change count in descending order, with ties broken by `percentage_file1`.
+
+**Output Schema:**
+```json
+{
+  "file1": "src/auth/login.js",
+  "file2": "src/utils/api.js",
+  "count": 5,
+  "percentage_file1": 83,
+  "percentage_file2": 100
+}
+```
+
 ### Running the Analyzer
 
 Run the analytics engine with Node.js:
