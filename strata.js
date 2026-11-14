@@ -109,8 +109,10 @@ function getCommitHistory(repoPath) {
 
 
 // --- quick test ---
-const testPath = ".";
-const result = getCommitHistory(testPath);
-console.log(result);
+if (require.main === module) {
+    const testPath = ".";
+    const result = getCommitHistory(testPath);
+    console.log(result);
+}
 
 module.exports = { getCommitHistory };
