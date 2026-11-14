@@ -52,9 +52,10 @@ function analyzeRepository(commits) {
         ownership[file.name] = {};
       }
       if (!ownership[file.name][author]) {
-        ownership[file.name][author] = 0;
+        ownership[file.name][author] = { commits: 0, linesChanged: 0 };
       }
-      ownership[file.name][author] += 1;
+      ownership[file.name][author].commits += 1;
+      ownership[file.name][author].linesChanged += (file.insertions || 0) + (file.deletions || 0);
     }
 
     if (commit.files.length > MAX_FILES_FOR_COUPLING) {
@@ -103,20 +104,36 @@ function analyzeRepository(commits) {
     });
 
   const ownershipAnalysis = Object.entries(ownership).map(([file, contributors]) => {
+    let totalLinesChanged = 0;
     let totalCommits = 0;
-    let primaryOwner = "";
-    let highestAuthorCommits = 0;
 
-    for (const [author, count] of Object.entries(contributors)) {
-      totalCommits += count;
-      if (count > highestAuthorCommits) {
-        highestAuthorCommits = count;
-        primaryOwner = author;
+    for (const stats of Object.values(contributors)) {
+      totalLinesChanged += stats.linesChanged;
+      totalCommits += stats.commits;
+    }
+
+    let primaryOwner = "";
+    let highestValue = 0;
+
+    if (totalLinesChanged > 0) {
+      for (const [author, stats] of Object.entries(contributors)) {
+        if (stats.linesChanged > highestValue) {
+          highestValue = stats.linesChanged;
+          primaryOwner = author;
+        }
+      }
+    } else {
+      for (const [author, stats] of Object.entries(contributors)) {
+        if (stats.commits > highestValue) {
+          highestValue = stats.commits;
+          primaryOwner = author;
+        }
       }
     }
 
-    const ownershipPercentage = totalCommits > 0
-      ? Math.round((highestAuthorCommits / totalCommits) * 100)
+    const total = totalLinesChanged > 0 ? totalLinesChanged : totalCommits;
+    const ownershipPercentage = total > 0
+      ? Math.round((highestValue / total) * 100)
       : 0;
 
     return {
@@ -124,8 +141,16 @@ function analyzeRepository(commits) {
       primaryOwner,
       ownershipPercentage,
       isBusFactorRisk: ownershipPercentage >= 80,
+      totalLinesChanged,
       contributors
     };
+  });
+
+  ownershipAnalysis.sort((a, b) => {
+    if (b.ownershipPercentage !== a.ownershipPercentage) {
+      return b.ownershipPercentage - a.ownershipPercentage;
+    }
+    return b.totalLinesChanged - a.totalLinesChanged;
   });
 
   return {
