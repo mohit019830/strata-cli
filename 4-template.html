@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strata report</title>
+<!-- Graphs: Chart.js v4, MIT License (c) 2014-2024 Chart.js Contributors.
+     Vendored and inlined by Strata so this report works offline.
+     Full license text: vendor/chart.js.LICENSE.md in the Strata source. -->
+<script>__CHART_JS__</script>
+<style>
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f6f8fa; color: #1f2328; }
+  header { background: #0d1117; color: #fff; padding: 20px 32px; }
+  header h1 { margin: 0 0 4px; font-size: 20px; }
+  header p { margin: 2px 0; font-size: 13px; color: #9da7b3; }
+  .scope-note { background: #fff8c5; border: 1px solid #d4a72c; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-bottom: 24px; }
+  main { max-width: 960px; margin: 24px auto; padding: 0 16px; }
+  .cards { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 24px; }
+  .card { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 14px 18px; min-width: 140px; }
+  .card .num { font-size: 24px; font-weight: 700; }
+  .card .label { font-size: 12px; color: #57606a; text-transform: uppercase; letter-spacing: .04em; }
+  section { background: #fff; border: 1px solid #d0d7de; border-radius: 8px; padding: 20px; margin-bottom: 24px; }
+  h2 { margin-top: 0; font-size: 16px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #eaeef2; }
+  th { color: #57606a; font-weight: 600; }
+  tr.risk td { background: #ffebe9; }
+  .chart-wrap { max-height: 360px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Strata report</h1>
+  <p>{{repoPath}}</p>
+  <p>Generated {{generatedAt}}{{#author}} &middot; author filter: {{author}}{{/author}}{{#since}} &middot; since {{since}}{{/since}}</p>
+</header>
+<main>
+  {{#hasFilters}}
+  <div class="scope-note">
+    This report covers only a filtered subset of commits{{#author}} by <strong>{{author}}</strong>{{/author}}{{#since}} since <strong>{{since}}</strong>{{/since}}.
+    Ownership and bus-factor figures are computed within that subset, not the whole repository.
+  </div>
+  {{/hasFilters}}
+  <div class="cards">
+    <div class="card"><div class="num">{{summary.totalCommits}}</div><div class="label">Commits</div></div>
+    <div class="card"><div class="num">{{summary.uniqueFiles}}</div><div class="label">Files touched</div></div>
+    <div class="card"><div class="num">{{summary.totalContributors}}</div><div class="label">Contributors</div></div>
+    <div class="card"><div class="num">{{summary.busFactorRiskCount}}</div><div class="label">Bus-factor risks</div></div>
+  </div>
+
+  <section>
+    <h2>Churn hotspots</h2>
+    <div class="chart-wrap"><canvas id="churnChart"></canvas></div>
+    <table>
+      <thead><tr><th>File</th><th>Changes</th><th>+ Lines</th><th>- Lines</th></tr></thead>
+      <tbody>
+        {{#churnRows}}<tr><td>{{name}}</td><td>{{frequency}}</td><td>{{insertions}}</td><td>{{deletions}}</td></tr>{{/churnRows}}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Knowledge silos</h2>
+    <div class="chart-wrap"><canvas id="ownershipChart"></canvas></div>
+    <table>
+      <thead><tr><th>File</th><th>Main owner</th><th>Ownership</th><th>Risk</th></tr></thead>
+      <tbody>
+        {{#ownershipRows}}<tr class="{{rowClass}}"><td>{{file}}</td><td>{{primaryOwner}}</td><td>{{ownershipPercentage}}%</td><td>{{riskLabel}}</td></tr>{{/ownershipRows}}
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Temporal coupling</h2>
+    <table>
+      <thead><tr><th>File A</th><th>File B</th><th>Together</th><th>A &rarr; B</th><th>B &rarr; A</th></tr></thead>
+      <tbody>
+        {{#couplingRows}}<tr><td>{{file1}}</td><td>{{file2}}</td><td>{{count}}x</td><td>{{percentage_file1}}%</td><td>{{percentage_file2}}%</td></tr>{{/couplingRows}}
+      </tbody>
+    </table>
+  </section>
+</main>
+<script>
+const DATA = __CHART_DATA__;
+
+// animation disabled: the export is a static report, and it keeps rendered
+// output deterministic (no mid-animation frames in captures).
+window.__charts = [];
+window.__charts.push(new Chart(document.getElementById("churnChart"), {
+  type: "bar",
+  data: {
+    labels: DATA.churn.labels,
+    datasets: [
+      { label: "Changes", data: DATA.churn.frequency, backgroundColor: "#0969da" },
+      { label: "+ Lines", data: DATA.churn.insertions, backgroundColor: "#1a7f37" },
+      { label: "- Lines", data: DATA.churn.deletions, backgroundColor: "#cf222e" }
+    ]
+  },
+  options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, animation: false }
+}));
+
+window.__charts.push(new Chart(document.getElementById("ownershipChart"), {
+  type: "bar",
+  data: {
+    labels: DATA.ownership.labels,
+    datasets: [{
+      label: "Ownership %",
+      data: DATA.ownership.percentage,
+      backgroundColor: DATA.ownership.percentage.map(p => p >= 80 ? "#cf222e" : "#0969da")
+    }]
+  },
+  options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, animation: false, scales: { x: { max: 100 } } }
+}));
+</script>
+</body>
+</html>
