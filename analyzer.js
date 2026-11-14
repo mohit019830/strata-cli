@@ -186,11 +186,13 @@ function analyzeRepository(commits) {
   };
 }
 
-const dataPath = path.join(__dirname, "mockData.json");
-const rawData = fs.readFileSync(dataPath, "utf-8");
-const commits = JSON.parse(rawData);
+if (require.main === module) {
+  const dataPath = path.join(__dirname, "mockData.json");
+  const rawData = fs.readFileSync(dataPath, "utf-8");
+  const commits = JSON.parse(rawData);
 
-const results = analyzeRepository(commits);
-console.log("Analysis Results:", results);
+  const results = analyzeRepository(commits);
+  console.log("Analysis Results:", results);
+}
 
-module.exports = { analyzeRepository, generateFilePairs };
+module.exports = { analyzeRepository };
