@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strata report</title>
+<!-- Graphs: Chart.js v4, MIT License (c) 2014-2024 Chart.js Contributors.
+     Vendored and inlined by Strata so this report works offline.
+     Full license text: vendor/chart.js.LICENSE.md in the Strata source. -->
+<script>__CHART_JS__</script>
+<style>
+  :root {
+    --ink: #1f2328; --muted: #57606a; --line: #d8dee4;
+    --blue: #0969da; --red: #cf222e; --green: #1a7f37; --amber: #9a6700;
+  }
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, "Segoe UI", Roboto, sans-serif; margin: 0; background: #f6f8fa; color: var(--ink); line-height: 1.45; }
+  header { background: linear-gradient(135deg, #0d1117 0%, #161b22 100%); color: #fff; padding: 28px 32px; border-bottom: 3px solid var(--blue); }
+  header .brand { font-size: 12px; font-weight: 700; letter-spacing: .14em; color: #58a6ff; text-transform: uppercase; margin-bottom: 6px; }
+  header h1 { margin: 0 0 8px; font-size: 24px; font-weight: 700; }
+  header .repo { display: inline-block; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; background: #21262d; border: 1px solid #30363d; border-radius: 6px; padding: 3px 10px; color: #c9d1d9; }
+  header p.meta { margin: 10px 0 0; font-size: 13px; color: #9da7b3; }
+  main { max-width: 980px; margin: 24px auto 48px; padding: 0 16px; }
+  .scope-note { background: #fff8c5; border: 1px solid #d4a72c; border-left-width: 4px; border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 24px; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 28px; }
+  .card { background: #fff; border: 1px solid var(--line); border-left: 4px solid var(--blue); border-radius: 8px; padding: 14px 18px; }
+  .card.risk-ok { border-left-color: var(--green); }
+  .card.risk-bad { border-left-color: var(--red); background: #fff8f8; }
+  .card .num { font-size: 28px; font-weight: 700; line-height: 1.1; }
+  .card.risk-bad .num { color: var(--red); }
+  .card.risk-ok .num { color: var(--green); }
+  .card .label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-top: 4px; }
+  .verdict { border-radius: 8px; padding: 12px 16px; font-size: 14px; font-weight: 600; margin-bottom: 28px; }
+  .verdict.bad { background: #ffebe9; border: 1px solid #ffb3ad; color: var(--red); }
+  .verdict.good { background: #dafbe1; border: 1px solid #7ddb93; color: var(--green); }
+  section { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 22px 24px; margin-bottom: 24px; }
+  section h2 { margin: 0 0 2px; font-size: 17px; }
+  section .sub { margin: 0 0 16px; font-size: 13px; color: var(--muted); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 14px; }
+  th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #eaeef2; }
+  th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; border-bottom: 2px solid var(--line); }
+  tbody tr:nth-child(even) { background: #f6f8fa; }
+  tbody tr:hover { background: #eef4fc; }
+  td.file, td.owner { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  tr.risk td { background: #ffebe9; }
+  tr.risk:hover td { background: #ffd9d5; }
+  .pill { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 2px 10px; }
+  .pill.high { background: #cf222e; color: #fff; }
+  .pill.ok { background: #dafbe1; color: var(--green); }
+  .chart-wrap { max-height: 360px; margin-bottom: 6px; }
+  .table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  @media (max-width: 640px) {
+    section { padding: 16px 14px; }
+    table { font-size: 12px; }
+    th, td { padding: 5px 6px; }
+    .pill { padding: 2px 8px; }
+  }
+  footer { max-width: 980px; margin: 0 auto; padding: 0 16px 32px; font-size: 12px; color: var(--muted); text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Strata</div>
+  <h1>Repository health report</h1>
+  <span class="repo">{{repoPath}}</span>
+  <p class="meta">Generated {{generatedAt}}{{#author}} &middot; author filter: <strong>{{author}}</strong>{{/author}}{{#since}} &middot; since <strong>{{since}}</strong>{{/since}}</p>
+</header>
+<main>
+  {{#hasFilters}}
+  <div class="scope-note">
+    This report covers only a filtered subset of commits{{#author}} by <strong>{{author}}</strong>{{/author}}{{#since}} since <strong>{{since}}</strong>{{/since}}.
+    Ownership and bus-factor figures are computed within that subset, not the whole repository.
+  </div>
+  {{/hasFilters}}
+  <div class="cards">
+    <div class="card"><div class="num">{{summary.totalCommits}}</div><div class="label">Commits</div></div>
+    <div class="card"><div class="num">{{summary.uniqueFiles}}</div><div class="label">Files touched</div></div>
+    <div class="card"><div class="num">{{summary.totalContributors}}</div><div class="label">Contributors</div></div>
+    <div class="card {{#hasRisks}}risk-bad{{/hasRisks}}{{^hasRisks}}risk-ok{{/hasRisks}}"><div class="num">{{summary.busFactorRiskCount}}</div><div class="label">Bus-factor risks</div></div>
+  </div>
+  {{#hasRisks}}
+  <div class="verdict bad">Needs attention: {{summary.busFactorRiskCount}} file(s) have highly concentrated ownership - one author makes 80%+ of the changes. See Knowledge silos below.</div>
+  {{/hasRisks}}
+  {{^hasRisks}}
+  <div class="verdict good">Looks healthy: no single-owner knowledge silos detected.</div>
+  {{/hasRisks}}
+
+  <section>
+    <h2>Churn hotspots</h2>
+    <p class="sub">Files that appear in the most commits. High churn marks the code that benefits most from tests and review.</p>
+    <div class="chart-wrap"><canvas id="churnChart"></canvas></div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>File</th><th>Changes</th><th>+ Lines</th><th>- Lines</th></tr></thead>
+      <tbody>
+        {{#churnRows}}<tr><td class="file">{{name}}</td><td class="num">{{frequency}}</td><td class="num">{{insertions}}</td><td class="num">{{deletions}}</td></tr>{{/churnRows}}
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Knowledge silos</h2>
+    <p class="sub">Who owns each file. A file where one author makes 80%+ of the changes is a bus-factor risk if they leave.</p>
+    <div class="chart-wrap"><canvas id="ownershipChart"></canvas></div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>File</th><th>Main owner</th><th>Ownership</th><th>Risk</th></tr></thead>
+      <tbody>
+        {{#ownershipRows}}<tr class="{{rowClass}}"><td class="file">{{file}}</td><td class="owner">{{primaryOwner}}</td><td class="num">{{ownershipPercentage}}%</td><td><span class="pill {{pillClass}}">{{riskLabel}}</span></td></tr>{{/ownershipRows}}
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <section>
+    <h2>Temporal coupling</h2>
+    <p class="sub">Files that change together. "A &rarr; B 80%" means 80% of the commits touching A also touched B, so changing one usually means checking the other.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>File A</th><th>File B</th><th>Together</th><th>A &rarr; B</th><th>B &rarr; A</th></tr></thead>
+      <tbody>
+        {{#couplingRows}}<tr><td class="file">{{file1}}</td><td class="file">{{file2}}</td><td class="num">{{count}}x</td><td class="num">{{percentage_file1}}%</td><td class="num">{{percentage_file2}}%</td></tr>{{/couplingRows}}
+      </tbody>
+    </table>
+    </div>
+  </section>
+</main>
+<footer>Generated by Strata &middot; this report is fully self-contained and works offline</footer>
+<script>
+const DATA = __CHART_DATA__;
+
+// animation disabled: the export is a static report, and it keeps rendered
+// output deterministic (no mid-animation frames in captures).
+window.__charts = [];
+window.__charts.push(new Chart(document.getElementById("churnChart"), {
+  type: "bar",
+  data: {
+    labels: DATA.churn.labels,
+    datasets: [
+      { label: "Changes", data: DATA.churn.frequency, backgroundColor: "#0969da", borderRadius: 3 },
+      { label: "+ Lines", data: DATA.churn.insertions, backgroundColor: "#1a7f37", borderRadius: 3 },
+      { label: "- Lines", data: DATA.churn.deletions, backgroundColor: "#cf222e", borderRadius: 3 }
+    ]
+  },
+  options: {
+    indexAxis: "y", responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: { legend: { position: "bottom", labels: { boxWidth: 12 } } },
+    scales: {
+      x: { grid: { color: "#eaeef2" }, ticks: { color: "#57606a" } },
+      y: { grid: { display: false }, ticks: { color: "#1f2328", font: { family: "ui-monospace, Menlo, monospace", size: 11 } } }
+    }
+  }
+}));
+
+window.__charts.push(new Chart(document.getElementById("ownershipChart"), {
+  type: "bar",
+  data: {
+    labels: DATA.ownership.labels,
+    datasets: [{
+      label: "Ownership %",
+      data: DATA.ownership.percentage,
+      backgroundColor: DATA.ownership.percentage.map(p => p >= 80 ? "#cf222e" : "#0969da"),
+      borderRadius: 3
+    }]
+  },
+  options: {
+    indexAxis: "y", responsive: true, maintainAspectRatio: false, animation: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { max: 100, grid: { color: "#eaeef2" }, ticks: { color: "#57606a", callback: v => v + "%" } },
+      y: { grid: { display: false }, ticks: { color: "#1f2328", font: { family: "ui-monospace, Menlo, monospace", size: 11 } } }
+    }
+  }
+}));
+</script>
+</body>
+</html>
