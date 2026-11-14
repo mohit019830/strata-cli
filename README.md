@@ -66,6 +66,26 @@ Detects hidden architectural dependencies by identifying pairs of files that are
 }
 ```
 
+#### Code Ownership (Bus Factor)
+Identifies knowledge silos by calculating which contributor owns the majority of changes in each file, weighted by total `linesChanged` (`insertions + deletions`), with commit count used as a fallback for empty/mode-only changes:
+- **Author Normalization**: Trims whitespace and normalizes missing author names to `"Unknown"` to prevent profile fragmentation.
+- **Risk Flagging**: Flags files with `isBusFactorRisk: true` when a single contributor holds >= 80% ownership.
+- **Ranking**: Sorted in descending order by `ownershipPercentage` (using `totalLinesChanged` as a tie-breaker) to prioritize critical bus-factor risks.
+
+**Output Schema:**
+```json
+{
+  "file": "src/auth/login.js",
+  "primaryOwner": "Mohit",
+  "ownershipPercentage": 90,
+  "isBusFactorRisk": true,
+  "contributors": {
+    "Mohit": { "commits": 6, "linesChanged": 420 },
+    "Mahin": { "commits": 1, "linesChanged": 45 }
+  }
+}
+```
+
 ### Running the Analyzer
 
 Run the analytics engine with Node.js:
