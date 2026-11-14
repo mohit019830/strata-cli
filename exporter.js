@@ -51,6 +51,7 @@ function exportHtml(results, outDir, meta = {}) {
     author: meta.author,
     since: meta.since,
     hasFilters: Boolean(meta.author || meta.since),
+    hasRisks: results.summary.busFactorRiskCount > 0,
     generatedAt: new Date().toISOString(),
     summary: results.summary,
     churnRows: results.churn.slice(0, HTML_ROW_LIMIT),
@@ -58,7 +59,8 @@ function exportHtml(results, outDir, meta = {}) {
     ownershipRows: results.ownership.slice(0, HTML_ROW_LIMIT).map(r => ({
       ...r,
       riskLabel: r.isBusFactorRisk ? "HIGH" : "ok",
-      rowClass: r.isBusFactorRisk ? "risk" : ""
+      rowClass: r.isBusFactorRisk ? "risk" : "",
+      pillClass: r.isBusFactorRisk ? "high" : "ok"
     }))
   };
 
