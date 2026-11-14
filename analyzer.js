@@ -33,7 +33,7 @@ function analyzeRepository(commits) {
       continue;
     }
 
-    const author = commit.author;
+    const author = (commit.author || "").trim() || "Unknown";
 
     for (const file of commit.files) {
       if (!churn[file.name]) {
@@ -102,10 +102,36 @@ function analyzeRepository(commits) {
       return b.percentage_file1 - a.percentage_file1;
     });
 
+  const ownershipAnalysis = Object.entries(ownership).map(([file, contributors]) => {
+    let totalCommits = 0;
+    let primaryOwner = "";
+    let highestAuthorCommits = 0;
+
+    for (const [author, count] of Object.entries(contributors)) {
+      totalCommits += count;
+      if (count > highestAuthorCommits) {
+        highestAuthorCommits = count;
+        primaryOwner = author;
+      }
+    }
+
+    const ownershipPercentage = totalCommits > 0
+      ? Math.round((highestAuthorCommits / totalCommits) * 100)
+      : 0;
+
+    return {
+      file,
+      primaryOwner,
+      ownershipPercentage,
+      isBusFactorRisk: ownershipPercentage >= 80,
+      contributors
+    };
+  });
+
   return {
     churn: sortedChurn,
     coupling: sortedCoupling,
-    ownership
+    ownership: ownershipAnalysis
   };
 }
 
