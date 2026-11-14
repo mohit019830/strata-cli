@@ -106,7 +106,7 @@ commit '<b>Evil & Co</b>' e@x.io "2025-07-01T10:00:00" "hostile"
 cd - >/dev/null
 
 echo "== happy path =="
-expect_ok  "full run exits 0 with summary"        "Commits:      10"        node cli.js analyze "$DEMO"
+expect_ok  "full run exits 0 with summary"        "Bus-factor risks:"        node cli.js analyze "$DEMO"
 expect_ok  "coupling pair detected"               "src/auth.py"             node cli.js analyze "$DEMO"
 expect_ok  "author filter keeps subset"           "5 of 10 commits"         node cli.js analyze "$DEMO" --author=Mahin
 expect_ok  "author filter shows scope note"       "cover only that subset"  node cli.js analyze "$DEMO" --author=Mahin
