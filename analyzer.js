@@ -24,9 +24,25 @@ function generateFilePairs(files) {
 }
 
 function analyzeRepository(commits) {
+  if (!Array.isArray(commits) || commits.length === 0) {
+    return {
+      summary: {
+        totalCommits: 0,
+        uniqueFiles: 0,
+        totalContributors: 0,
+        busFactorRiskCount: 0,
+        topHotspot: null
+      },
+      churn: [],
+      coupling: [],
+      ownership: []
+    };
+  }
+
   const churn = {};
   const coupling = {};
   const ownership = {};
+  const contributors = new Set();
 
   for (const commit of commits) {
     if (!commit.files || commit.files.length === 0) {
@@ -34,6 +50,7 @@ function analyzeRepository(commits) {
     }
 
     const author = (commit.author || "").trim() || "Unknown";
+    contributors.add(author);
 
     for (const file of commit.files) {
       if (!churn[file.name]) {
@@ -153,7 +170,16 @@ function analyzeRepository(commits) {
     return b.totalLinesChanged - a.totalLinesChanged;
   });
 
+  const summary = {
+    totalCommits: commits.length,
+    uniqueFiles: sortedChurn.length,
+    totalContributors: contributors.size,
+    busFactorRiskCount: ownershipAnalysis.filter(item => item.isBusFactorRisk).length,
+    topHotspot: sortedChurn.length > 0 ? sortedChurn[0].name : null
+  };
+
   return {
+    summary,
     churn: sortedChurn,
     coupling: sortedCoupling,
     ownership: ownershipAnalysis
